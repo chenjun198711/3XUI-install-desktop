@@ -1,0 +1,37 @@
+# 依赖
+node_modules/
+
+# 运行时日志
+*.log
+npm-debug.log*
+
+# 环境变量 / 密钥
+.env
+.env.*
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 项目本地数据（含个人记忆与配置，不对外公开）
+.workbuddy/
+
+# 调试产物
+xray-test/
+sub_*.txt
+sub_*_link.txt
+
+# 桌面版运行时数据与构建中间物（Release 产物走 GitHub Releases，不进仓库）
+data/
+runtime/
+dist/
+build/
+*.exe
+*.dll
+*.nupkg
+*.zip
+
+# 工具缓存
+.ruff_cache/
+.dumate/

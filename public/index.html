@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3X-UI 一键安装器 · 桌面版</title>
+<link rel="stylesheet" href="/vendor/xterm/css/xterm.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+<style>
+/* ============ 村长实验室 czlab.dev 风格设计令牌 ============ */
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --text: #18181b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
+  /* Web3 紫罗兰-靛蓝渐变主色 */
+  --brand: #6d4aff;
+  --brand-2: #4f46e5;
+  --brand-soft: #f1edff;
+  --brand-border: #d9d0ff;
+  --success: #059669;
+  --success-soft: #ecfdf5;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --warn: #d97706;
+  --warn-soft: #fffbeb;
+  --grad: linear-gradient(135deg, #7c5cff 0%, #6d4aff 45%, #4f46e5 100%);
+  --shadow-sm: 0 1px 2px rgba(24,24,27,.05);
+  --shadow-md: 0 4px 16px rgba(24,24,27,.07);
+  --shadow-lg: 0 12px 40px rgba(109,74,255,.14);
+  --radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body > #toast, body > script { flex: none; }
+::selection { background: rgba(109,74,255,.2); }
+
+/* ============ 顶部导航 ============ */
+.nav {
+  position: sticky; top:0; z-index:50;
+  background: rgba(250,250,250,.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 920px; margin: 0 auto; padding: 0 24px;
+  height: 60px; display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; }
+.logo-mark {
+  width:32px;height:32px;border-radius:9px;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;
+  box-shadow: 0 4px 12px rgba(109,74,255,.35);
+}
+.logo small { color: var(--text-3); font-weight: 500; font-size: 12px; margin-left: 2px;}
+.nav-links { display:flex; gap:8px; }
+.nav-links a {
+  color: var(--text-2); text-decoration:none; font-size:13.5px; padding:6px 12px;
+  border-radius: 8px; transition: all .15s;
+}
+.nav-links a:hover { color: var(--brand); background: var(--brand-soft); }
+
+/* ============ 布局 ============ */
+.container { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; flex: 1 0 auto; }
+
+/* ============ Hero ============ */
+.hero { text-align:center; padding: 40px 0 36px; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background: var(--brand-soft); border:1px solid var(--brand-border);
+  color: var(--brand-2); font-size:12.5px; font-weight:600;
+  padding:5px 14px; border-radius:99px; margin-bottom:20px;
+}
+.hero-badge .dot { width:6px;height:6px;border-radius:50%;background:var(--brand); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.hero h1 {
+  font-size: 40px; font-weight: 800; letter-spacing: -0.5px; line-height:1.25;
+}
+.hero h1 .grad {
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p { color: var(--text-2); font-size: 16px; max-width: 560px; margin: 14px auto 0; }
+.hero-actions { margin-top: 28px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* ============ 按钮 ============ */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border:none; cursor:pointer; font-size:14.5px; font-weight:600;
+  padding: 11px 26px; border-radius: 12px; transition: all .18s;
+  font-family: inherit; text-decoration:none;
+}
+.btn-primary {
+  background: var(--grad); color:#fff;
+  box-shadow: 0 4px 14px rgba(109,74,255,.35);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(109,74,255,.42); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+.btn-secondary {
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+.btn-secondary:hover { border-color: var(--brand); color: var(--brand); }
+.btn-ghost { background:transparent; color: var(--text-2); }
+.btn-ghost:hover { background: var(--surface-2); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); border:1px solid #fecaca; }
+.btn-sm { padding: 7px 16px; font-size: 13px; border-radius: 9px; }
+
+/* ============ 卡片 / 步骤 ============ */
+.card {
+  background: var(--surface); border:1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.steps-bar {
+  display:flex; padding: 18px 28px 0; gap: 0; border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfdff 100%);
+}
+.step-item {
+  flex:1; display:flex; align-items:center; gap:10px;
+  padding: 0 4px 16px; position:relative;
+}
+.step-item .num {
+  width:26px;height:26px;border-radius:50%; flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;font-weight:700;
+  background: var(--surface-2); color: var(--text-3);
+  border: 1.5px solid var(--border-strong);
+  transition: all .3s;
+}
+.step-item .lbl { font-size:13px; color: var(--text-3); font-weight:500; white-space:nowrap; }
+.step-item.active .num { background: var(--grad); color:#fff; border-color:transparent; box-shadow: 0 3px 10px rgba(109,74,255,.4); }
+.step-item.active .lbl { color: var(--text); font-weight:600; }
+.step-item.done .num { background: var(--success-soft); color: var(--success); border-color:#a7f3d0; }
+.step-item.done .lbl { color: var(--text-2); }
+.step-item::after {
+  content:''; position:absolute; top:13px; right:-14px; width:28px; height:2px;
+  background: var(--border);
+}
+.step-item:last-child::after { display:none; }
+.step-item.done::after { background: #a7f3d0; }
+
+.card-body { padding: 28px; }
+.step-pane { display:none; animation: fadeUp .35s ease; }
+.step-pane.show { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+.pane-title { font-size:19px; font-weight:700; margin-bottom:4px; }
+.pane-desc { color: var(--text-2); font-size:13.5px; margin-bottom:22px; }
+
+/* ============ 表单 ============ */
+.form-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+.form-item { display:flex; flex-direction:column; gap:7px; }
+.form-item.full { grid-column: 1 / -1; }
+.form-item label { font-size:13px; font-weight:600; color:var(--text-2); display:flex; align-items:center; gap:6px; }
+.form-item label .req { color: var(--brand); }
+.form-item label .tip { font-weight:400; font-size:12px; color: var(--text-3); }
+.form-item input, .form-item select {
+  border: 1.5px solid var(--border-strong); border-radius: 11px;
+  padding: 10px 14px; font-size:14px; font-family: inherit;
+  background: var(--surface); color: var(--text);
+  transition: border-color .15s, box-shadow .15s; width:100%;
+}
+.form-item input:focus, .form-item select:focus {
+  outline:none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(109,74,255,.12);
+}
+.form-item input::placeholder { color: var(--text-3); }
+.input-with-btn { display:flex; gap:8px; }
+.input-with-btn .btn { flex-shrink:0; }
+.field-error { font-size:12px; color: var(--danger); display:none; }
+.form-item.invalid input { border-color: var(--danger); }
+.form-item.invalid .field-error { display:block; }
+
+.hint-box {
+  background: var(--brand-soft); border:1px solid var(--brand-border);
+  border-radius: 12px; padding: 12px 16px; font-size: 13px; color: var(--text-2);
+  margin-bottom: 20px; display:flex; gap:10px; align-items:flex-start;
+}
+.hint-box.warn { background: var(--warn-soft); border-color:#fde68a; }
+.hint-box.danger { background: var(--danger-soft); border-color:#fecaca; }
+.hint-box.success { background: var(--success-soft); border-color:#a7f3d0; }
+.hint-box b { color: var(--text); }
+.hint-box a {
+  color: var(--brand); font-weight: 600; text-decoration: none;
+  border-bottom: 1px dashed var(--brand-border); padding-bottom: 1px;
+}
+.hint-box a:hover { text-decoration: underline; border-bottom-color: transparent; }
+
+/* 密码强度条 */
+.pw-meter { height:5px; border-radius:99px; background:var(--surface-2); overflow:hidden; margin-top:2px; }
+.pw-meter i { display:block; height:100%; width:0; border-radius:99px; transition: all .3s; }
+.pw-actions { display:flex; gap:6px; align-items:center; }
+
+/* ============ 开关 ============ */
+.switch-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 13px 16px; background: var(--surface-2);
+  border-radius: 12px; margin-top: 4px;
+}
+.switch-row .info b { font-size:13.5px; display:block; }
+.switch-row .info span { font-size:12.5px; color: var(--text-3); }
+.switch { position:relative; width:42px; height:24px; flex-shrink:0; cursor:pointer; }
+.switch input { opacity:0; width:0; height:0; }
+.switch i {
+  position:absolute; inset:0; background: var(--border-strong); border-radius:99px;
+  transition:.25s;
+}
+.switch i::before {
+  content:''; position:absolute; width:18px;height:18px;border-radius:50%;
+  background:#fff; top:3px; left:3px; transition:.25s; box-shadow:var(--shadow-sm);
+}
+.switch input:checked + i { background: var(--grad); }
+.switch input:checked + i::before { transform: translateX(18px); }
+
+/* ============ 测试连接结果 ============ */
+.conn-status {
+  margin-top:14px; padding:11px 14px; border-radius:11px; font-size:13.5px;
+  display:none; align-items:center; gap:8px;
+}
+.conn-status.ok { display:flex; background: var(--success-soft); color: var(--success); border:1px solid #a7f3d0; }
+.conn-status.fail { display:flex; background: var(--danger-soft); color: var(--danger); border:1px solid #fecaca; }
+.conn-status.loading { display:flex; background: var(--brand-soft); color: var(--brand-2); border:1px solid var(--brand-border); }
+.spin-dot { width:15px;height:15px;border-radius:50%; border:2px solid rgba(109,74,255,.25); border-top-color: var(--brand); animation: spin .7s linear infinite; flex-shrink:0; }
+
+/* ============ 协议选择卡片 ============ */
+.proto-cards { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+.proto-card {
+  border:1.5px solid var(--border); border-radius:14px; padding:16px 18px; cursor:pointer;
+  background: var(--surface); transition: all .18s; position:relative;
+}
+.proto-card:hover { border-color: var(--brand-border); box-shadow: var(--shadow-sm); }
+.proto-card.proto-on { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 4px 16px rgba(109,74,255,.12); }
+.proto-card.proto-on::after { content:'✓'; position:absolute; top:12px; right:14px; color: var(--brand); font-weight:700; }
+.proto-name { font-weight:700; font-size:15px; margin-bottom:4px; }
+.proto-desc { font-size:12.5px; color: var(--text-2); }
+
+/* ============ 创建节点结果 ============ */
+.node-result {
+  margin-top:18px; padding:20px; border:1px solid #a7f3d0; border-radius:16px;
+  background: var(--success-soft); display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;
+}
+.nr-head { width:100%; font-weight:700; font-size:16px; color: var(--success); }
+.nr-qr { width:160px; height:160px; background:#fff; border-radius:12px; padding:10px; box-shadow: var(--shadow-sm); flex-shrink:0; }
+.nr-qr img { width:100%; height:100%; }
+.nr-link { flex:1; min-width:260px; }
+.nr-label { font-size:13px; color: var(--text-2); margin-bottom:6px; }
+.nr-link textarea {
+  width:100%; height:80px; resize:vertical; border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; font-family: ui-monospace, Consolas, monospace; font-size:12.5px; color: var(--text);
+  background: var(--surface); box-sizing:border-box;
+}
+.nr-info { width:100%; font-size:13px; color: var(--text-2); line-height:1.8; background: var(--surface); padding:12px 14px; border-radius:10px; border:1px solid var(--border); }
+.mono { font-family: ui-monospace, Consolas, monospace; word-break: break-all; }
+@media (max-width:560px) {
+  .proto-cards, .status-cards { grid-template-columns: 1fr; }
+}
+.spinner {
+  width:15px;height:15px;border-radius:50%;
+  border:2px solid rgba(109,74,255,.25); border-top-color: var(--brand);
+  animation: spin .7s linear infinite; flex-shrink:0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============ 状态卡片 ============ */
+.status-cards { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+.status-card { background: var(--surface); border:1px solid var(--border); border-radius:13px; padding:14px 16px; box-shadow: var(--shadow-sm); }
+.sc-title { font-size:13.5px; font-weight:700; color: var(--text); margin-bottom:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.sc-badge { font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:999px; background: var(--brand-soft); color: var(--brand); }
+.sc-body { font-size:12.8px; line-height:1.7; color: var(--text-2); }
+@media (max-width: 640px){ .status-cards { grid-template-columns: 1fr; } }
+
+/* ============ 终端 ============ */
+.term-wrap {
+  background: #101014; border-radius: 12px; overflow:hidden;
+  border: 1px solid #27272a; box-shadow: var(--shadow-lg);
+}
+.term-bar {
+  display:flex; align-items:center; gap:8px; padding: 10px 14px;
+  background: #18181b; border-bottom: 1px solid #27272a;
+}
+.term-bar .dots { display:flex; gap:6px; }
+.term-bar .dots i { width:11px;height:11px;border-radius:50%; }
+.term-bar .dots i:nth-child(1){ background:#ff5f57; }
+.term-bar .dots i:nth-child(2){ background:#febc2e; }
+.term-bar .dots i:nth-child(3){ background:#28c840; }
+.term-bar .title { color:#a1a1aa; font-size:12.5px; margin-left:6px; font-family: ui-monospace, monospace; }
+.term-bar .live {
+  margin-left:auto; color:#4ade80; font-size:11.5px; font-weight:600;
+  display:flex; align-items:center; gap:5px;
+}
+.term-bar .live .dot { width:7px;height:7px;border-radius:50%;background:#4ade80; animation:pulse 1.5s infinite; }
+.term-bar .copy-btn {
+  margin-left:auto; background:rgba(255,255,255,.09); color:#e2e8f0;
+  border:1px solid rgba(255,255,255,.18); border-radius:6px; font-size:12px;
+  padding:2px 10px; cursor:pointer; font-family:inherit; line-height:1.6;
+}
+.term-bar .copy-btn:hover { background:rgba(255,255,255,.18); }
+#terminal { padding: 12px 14px; min-height: 340px; max-height: 420px; }
+
+/* 安装进度阶段 */
+.stage-track { display:flex; flex-direction:column; gap:0; margin-bottom:18px; }
+.stage {
+  display:flex; align-items:flex-start; gap:12px; padding: 8px 0; position:relative;
+}
+.stage .icon {
+  width:26px;height:26px;border-radius:50%; flex-shrink:0; margin-top:1px;
+  display:flex;align-items:center;justify-content:center; font-size:13px;
+  background: var(--surface-2); color: var(--text-3); border:1.5px solid var(--border-strong);
+  transition: all .3s; z-index:1;
+}
+.stage .txt { font-size:13.5px; color: var(--text-3); padding-top:3px; transition: color .3s; }
+.stage.running .icon { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); }
+.stage.running .icon .spinner { width:13px;height:13px; }
+.stage.running .txt { color: var(--text); font-weight:600; }
+.stage.done .icon { background: var(--success-soft); border-color:#a7f3d0; color: var(--success); }
+.stage.done .txt { color: var(--text-2); }
+
+/* ============ 完成页 ============ */
+.result-hero { text-align:center; padding: 12px 0 24px; }
+.result-hero .big {
+  width:72px;height:72px;border-radius:50%; margin:0 auto 16px;
+  background: var(--success-soft); border:1px solid #a7f3d0;
+  display:flex;align-items:center;justify-content:center; font-size:34px;
+}
+.result-hero h2 { font-size:24px; font-weight:800; }
+.result-hero p { color: var(--text-2); font-size:14px; margin-top:6px; }
+.cred-grid { display:grid; grid-template-columns:1fr; gap:12px; margin: 6px 0 22px; }
+.cred-item {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  border:1px solid var(--border); border-radius:12px; padding:13px 16px;
+  background: var(--surface);
+}
+.cred-item .k { font-size:12.5px; color: var(--text-3); font-weight:600; margin-bottom:2px; }
+.cred-item .v {
+  font-size:14.5px; font-weight:600; font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  word-break: break-all; text-align:left;
+}
+.cred-item .v.link { color: var(--brand-2); }
+.copy-btn {
+  flex-shrink:0; border:1px solid var(--border-strong); background:var(--surface);
+  border-radius:8px; padding:6px 12px; font-size:12.5px; cursor:pointer;
+  color: var(--text-2); font-weight:600; transition: all .15s; font-family:inherit;
+}
+.copy-btn:hover { border-color: var(--brand); color: var(--brand); }
+.copy-btn.copied { border-color:#a7f3d0; color: var(--success); background: var(--success-soft); }
+
+.next-steps { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.next-step {
+  border:1px solid var(--border); border-radius:12px; padding:16px;
+  background: linear-gradient(180deg,#ffffff, #fcfcfd);
+}
+.next-step .n {
+  display:inline-flex; width:24px;height:24px; border-radius:7px;
+  background: var(--brand-soft); color: var(--brand-2);
+  align-items:center; justify-content:center; font-size:12.5px; font-weight:700; margin-bottom:8px;
+}
+.next-step b { font-size:13.5px; display:block; margin-bottom:4px; }
+.next-step span { font-size:12.5px; color: var(--text-2); }
+
+/* ============ 命令模式 ============ */
+.cmd-block {
+  background:#101014; border-radius:12px; padding:16px; position:relative;
+  border:1px solid #27272a; margin-top:6px;
+}
+.cmd-block code {
+  display:block; color:#a5f3a0; font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size:12.5px; line-height:1.7; word-break: break-all; white-space:pre-wrap;
+}
+.cmd-block .copy-btn {
+  position:absolute; top:10px; right:10px;
+  background:#18181b; border-color:#3f3f46; color:#d4d4d8;
+}
+.cmd-block .copy-btn:hover { color:#fff; border-color:#71717a; }
+.cmd-block .copy-btn.copied { color:#4ade80; border-color:#166534; background:#052e16; }
+
+/* ============ 页脚 ============ */
+.footer {
+  text-align:center; padding: 28px 24px 40px; color: var(--text-3); font-size:12.5px;
+  border-top: 1px solid var(--border); margin-top: 20px;
+}
+.footer a { color: var(--text-2); text-decoration:none; }
+.footer a:hover { color: var(--brand); }
+
+.actions-row {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-top: 26px; padding-top: 20px; border-top: 1px dashed var(--border);
+}
+.actions-right { display:flex; gap:10px; }
+
+/* toast */
+#toast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:#18181b; color:#fff; padding:10px 20px; border-radius:99px;
+  font-size:13.5px; opacity:0; transition: all .3s; z-index:99; pointer-events:none;
+  box-shadow: var(--shadow-md);
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 30px; }
+  .next-steps { grid-template-columns:1fr; }
+  .steps-bar { padding: 14px 14px 0; }
+  .step-item .lbl { display:none; }
+  .step-item::after { top:13px; right:-10px; width:20px; }
+  .card-body { padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-mark">🛡️</div>
+      3X-UI 一键安装器 <small>桌面版</small>
+    </div>
+    <div class="nav-links">
+      <a href="https://www.vpsjh.com" target="_blank" rel="noopener">VPS聚合站</a>
+      <a href="https://github.com/MHSanaei/3x-ui" target="_blank">3X-UI 官方</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- ============ 欢迎 ============ -->
+  <section class="hero" id="hero">
+    <div class="hero-badge"><span class="dot"></span>可视化安装 · 无需命令行知识 · 全程自动</div>
+    <h1>在 VPS 上一键安装 <span class="grad">3X-UI 面板</span></h1>
+    <p>填写服务器信息，点一下按钮，剩下的交给程序。自动完成下载、安装、账号密码与端口配置，最后把面板地址交到你手上。</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="goStep(1)">🚀 开始安装</button>
+      <button class="btn btn-secondary" onclick="goStep('node')">🛰️ 创建节点</button>
+      <button class="btn btn-secondary" onclick="goStep('rescue')">🩹 面板急救箱</button>
+      <button class="btn btn-secondary" onclick="goStep('domain')">🌐 域名与 HTTPS</button>
+      <button class="btn btn-secondary" onclick="goStep('cmd')">⌨️ 直接给我命令</button>
+    </div>
+  </section>
+
+  <!-- ============ 主卡片 ============ -->
+  <div class="card" id="wizard" style="display:none">
+    <div class="steps-bar" id="stepsBar">
+      <div class="step-item active" data-step="1"><div class="num">1</div><div class="lbl">服务器信息</div></div>
+      <div class="step-item" data-step="2"><div class="num">2</div><div class="lbl">面板配置</div></div>
+      <div class="step-item" data-step="3"><div class="num">3</div><div class="lbl">自动安装</div></div>
+      <div class="step-item" data-step="4"><div class="num">4</div><div class="lbl">安装完成</div></div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- 步骤 1：服务器 -->
+      <div class="step-pane show" data-pane="1">
+        <div class="pane-title">第一步：填写你的服务器（VPS）信息</div>
+        <div class="pane-desc">程序会通过 SSH 直连你自己的服务器执行安装，密码只在你的电脑内存中短暂停留，不会上传到任何第三方。</div>
+
+        <div class="hint-box">💡
+          <div>不知道去哪找这些信息？登录你购买 VPS 的平台（如 <a href="https://www.vultr.com/?ref=9920736" target="_blank" rel="noopener">Vultr</a>、<a href="https://bwh81.net/aff.php?aff=84102" target="_blank" rel="noopener">搬瓦工</a>、<a href="https://my.zorocloud.com/aff.php?aff=958" target="_blank" rel="noopener">ZoroCloud</a>、<a href="https://www.dmit.io/aff.php?aff=22794" target="_blank" rel="noopener">Dmit</a> 等），在控制台一般就能看到 <b>IP 地址</b>、<b>root 密码</b>和<b>SSH端口</b>。</div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-item">
+            <label>服务器 IP 地址 <span class="req">*</span></label>
+            <input type="text" id="host" placeholder="例如 104.17.20.100" autocomplete="off">
+            <div class="field-error">请填写服务器 IP</div>
+          </div>
+          <div class="form-item">
+            <label>SSH 端口 <span class="tip">一般不用改</span></label>
+            <input type="number" id="sshPort" value="22" autocomplete="off">
+          </div>
+          <div class="form-item">
+            <label>SSH 用户名 <span class="tip">绝大多数是 root</span></label>
+            <input type="text" id="sshUser" value="root" autocomplete="off">
+          </div>
+          <div class="form-item">
+            <label>登录方式</label>
+            <select id="authType" onchange="toggleAuthMode()">
+              <option value="password">密码登录（推荐小白）</option>
+              <option value="key">密钥登录</option>
+            </select>
+          </div>
+          <div class="form-item full" id="passwordField">
+            <label>SSH 密码 <span class="req">*</span></label>
+            <div class="input-with-btn">
+              <input type="password" id="sshPass" placeholder="VPS 控制台里的 root 密码" autocomplete="new-password">
+              <button class="btn btn-secondary btn-sm" onclick="togglePw('sshPass', this)">👁 显示</button>
+            </div>
+            <div class="field-error">请填写 SSH 密码</div>
+          </div>
+          <div class="form-item full" id="keyField" style="display:none">
+            <label>私钥内容 <span class="tip">粘贴整个文件内容（-----BEGIN ...）</span></label>
+            <textarea id="sshKey" rows="4" style="border:1.5px solid var(--border-strong);border-radius:11px;padding:10px 14px;font-size:13px;font-family:ui-monospace,monospace;width:100%;resize:vertical" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn btn-secondary btn-sm" id="testBtn" onclick="testConnection()">🔌 测试连接</button>
+        </div>
+        <div class="conn-status" id="connStatus"></div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="backToHero()">← 返回</button>
+          <div class="actions-right">
+            <button class="btn btn-primary" onclick="validateStep1()">下一步：配置面板 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 步骤 2：面板配置 -->
+      <div class="step-pane" data-pane="2">
+        <div class="pane-title">第二步：设置面板的账号和端口</div>
+        <div class="pane-desc">这些是你以后登录 3X-UI 管理面板用的。不知道怎么填？直接用默认值也完全没问题。</div>
+
+        <div class="form-grid">
+          <div class="form-item">
+            <label>面板用户名 <span class="req">*</span></label>
+            <input type="text" id="panelUser" value="admin" autocomplete="off">
+          </div>
+          <div class="form-item">
+            <label>面板密码 <span class="req">*</span></label>
+            <div class="input-with-btn">
+              <input type="text" id="panelPass" autocomplete="off">
+              <button class="btn btn-secondary btn-sm" onclick="genPassword()">🎲 随机</button>
+            </div>
+            <div class="pw-meter"><i id="pwBar"></i></div>
+            <div class="field-error" id="pwHint">密码至少 8 位，建议包含大小写字母和数字</div>
+          </div>
+          <div class="form-item">
+            <label>面板端口 <span class="tip">用域名（Cloudflare 代理）请用 443 / 2053 / 8443 等；否则随便选 10000-65535（要云控制台放行）</span></label>
+            <input type="number" id="panelPort" autocomplete="off">
+          </div>
+          <div class="form-item">
+            <label>访问路径 <span class="tip">留空自动生成，更安全</span></label>
+            <input type="text" id="basePath" placeholder="例如 my-secret-path/" autocomplete="off">
+          </div>
+          <div class="form-item full">
+            <label>绑定域名 <span class="tip">可选，不填也能正常用</span></label>
+            <input type="text" id="domain" placeholder="例如 panel.example.com（不填则用 IP 访问）" autocomplete="off">
+            <span style="font-size:12px;color:var(--text-3);line-height:1.7">
+              💡 域名需先在 DNS 服务商处添加 A 记录、指向这台服务器的 IP（如不确定可留空，之后再绑）。填写后：① 完成页会用域名生成面板地址，比裸 IP 好记；② 安装时自动帮你校验域名解析是否生效；③ 之后可在面板「面板设置 → SSL 证书」里一键申请证书，升级为 https 加密访问，防止登录密码在网络传输中被窃听。<b>不填域名完全不影响面板使用</b>，IP + 端口就是完整地址。
+            </span>
+          </div>
+        </div>
+
+        <div class="switch-row">
+          <div class="info">
+            <b>GitHub 加速（ghproxy 镜像）</b>
+            <span>安装默认自动尝试多个下载源（直连 GitHub → ghfast → ghproxy 等），任意一个可用即成功；开启后跳过直连、优先镜像，适合直连被墙的 VPS</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="useProxy"><i></i></label>
+        </div>
+
+        <div class="hint-box warn">⚠️
+          <div>安装大约需要 <b>1~3 分钟</b>，期间请不要关闭浏览器页面。程序会实时显示安装日志，全程透明。</div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="goStep(1)">← 上一步</button>
+          <div class="actions-right">
+            <button class="btn btn-secondary" onclick="previewCmd()">⌨️ 只生成命令</button>
+            <button class="btn btn-primary" id="startBtn" onclick="startInstall()">🚀 开始自动安装</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 步骤 3：安装中 -->
+      <div class="step-pane" data-pane="3">
+        <div class="pane-title">正在安装，请稍候…</div>
+        <div class="pane-desc">下面是实时的安装日志（来自你服务器的真实输出）。</div>
+
+        <div class="stage-track" id="stageTrack">
+          <div class="stage" data-stage="1"><div class="icon">1</div><div class="txt">连接服务器并检查系统环境</div></div>
+          <div class="stage" data-stage="2"><div class="icon">2</div><div class="txt">下载并安装 3X-UI 面板</div></div>
+          <div class="stage" data-stage="3"><div class="icon">3</div><div class="txt">应用面板设置并重启服务</div></div>
+          <div class="stage" data-stage="4"><div class="icon">4</div><div class="txt">验证并生成访问信息</div></div>
+        </div>
+
+        <div class="term-wrap">
+          <div class="term-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="title">root@<span id="termHost">server</span></div>
+            <div class="live"><span class="dot"></span>LIVE</div>
+            <button class="copy-btn" onclick="copyTerm()">📋 复制日志</button>
+          </div>
+          <div id="terminal"></div>
+        </div>
+
+        <div class="actions-row">
+          <span style="color:var(--text-3);font-size:13px">安装中请勿关闭页面…</span>
+          <button class="btn btn-danger btn-sm" onclick="abortInstall()">✕ 中止安装</button>
+        </div>
+      </div>
+
+      <!-- 步骤 4：完成 -->
+      <div class="step-pane" data-pane="4">
+        <div class="result-hero">
+          <div class="big">🎉</div>
+          <h2>安装成功！</h2>
+          <p>3X-UI 面板已经在你的服务器上运行了。收藏好下面的信息，然后就可以登录面板了。</p>
+        </div>
+
+        <div class="cred-grid" id="credGrid">
+          <div class="cred-item">
+            <div><div class="k">面板访问地址（点击打开）</div><div class="v link" id="rUrl">-</div></div>
+            <button class="copy-btn" onclick="copyText(document.getElementById('rUrl').textContent, this)">复制</button>
+          </div>
+          <div class="cred-item">
+            <div><div class="k">用户名</div><div class="v" id="rUser">-</div></div>
+            <button class="copy-btn" onclick="copyText(document.getElementById('rUser').textContent, this)">复制</button>
+          </div>
+          <div class="cred-item">
+            <div><div class="k">密码</div><div class="v" id="rPass">-</div></div>
+            <button class="copy-btn" onclick="copyText(document.getElementById('rPass').textContent, this)">复制</button>
+          </div>
+        </div>
+
+        <div class="hint-box success">✅
+          <div>打不开面板？去云服务商控制台的<b>防火墙/安全组</b>，放行你设置的<b>面板端口</b>（TCP 协议），然后刷新重试。</div>
+        </div>
+
+        <div class="hint-box" id="sslHint" style="display:none">🔒
+          <div>你绑定了域名，当前仍是 <b>http 明文访问</b>。建议登录面板后进入 <b>面板设置 → SSL 证书</b>，一键申请证书，之后即可用 <b>https</b> 加密访问面板，登录密码不再裸奔。</div>
+        </div>
+
+        <div class="hint-box warn" id="cfPortWarn" style="display:none;margin-top:10px">⚠️
+          <div></div>
+        </div>
+
+        <div class="hint-box warn" id="portWarn" style="display:none;margin-top:10px">⚠️
+          <div></div>
+        </div>
+
+        <div class="hint-box warn" id="probeWarn" style="display:none;margin-top:10px">⚠️
+          <div></div>
+        </div>
+
+        <div class="pane-title" style="font-size:15px;margin-bottom:12px">接下来做什么？</div>
+        <div class="next-steps">
+          <div class="next-step"><div class="n">1</div><b>登录面板</b><span>用上面的地址和账号登录，右上角可切换成中文界面。</span></div>
+          <div class="next-step"><div class="n">2</div><b>创建节点</b><span>面板左侧「入站列表」→ 添加入站 → 协议选 VLESS + Reality，一键生成节点。</span></div>
+          <div class="next-step"><div class="n">3</div><b>导出订阅</b><span>添加客户端后，在入站操作里扫码或复制链接，导入手机/电脑客户端。</span></div>
+          <div class="next-step"><div class="n">4</div><b>看视频教程</b><span>搜索「Web3村长」，跟着视频一步步配置节点和客户端。</span></div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="backToHero()">← 返回首页</button>
+          <button class="btn btn-ghost" onclick="location.reload()">↺ 再装一台服务器</button>
+          <div class="actions-right">
+            <button class="btn btn-primary" id="openPanelBtn" onclick="openPanel()">打开我的面板 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 命令模式 -->
+      <div class="step-pane" data-pane="cmd">
+        <div class="pane-title">手动安装命令</div>
+        <div class="pane-desc">如果你习惯用 Xshell / Termius 等工具连接服务器，把下面这条命令复制粘贴到服务器的终端里回车即可，效果和自动安装完全一样（已包含你的所有设置）。</div>
+
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-item"><label>面板用户名</label><input type="text" id="cPanelUser" value="admin"></div>
+          <div class="form-item"><label>面板密码</label><input type="text" id="cPanelPass"></div>
+          <div class="form-item"><label>面板端口</label><input type="number" id="cPanelPort"></div>
+          <div class="form-item"><label>访问路径（可留空）</label><input type="text" id="cBasePath" placeholder="留空自动生成"></div>
+        </div>
+        <div class="switch-row" style="margin:0 0 14px">
+          <div class="info"><b>GitHub 加速</b><span>下载慢/失败时开启</span></div>
+          <label class="switch"><input type="checkbox" id="cUseProxy" onchange="renderCmd()"><i></i></label>
+        </div>
+
+        <div class="cmd-block">
+          <button class="copy-btn" onclick="copyCmd(this)">复制</button>
+          <code id="cmdOut"></code>
+        </div>
+
+        <div class="hint-box warn">⚠️
+          <div>命令中的密码是<b>明文</b>的，安装完成后建议不要把这条命令截图/分享给别人。安装结束后可在面板里修改密码。</div>
+        </div>
+
+        <!-- SSH 执行任意命令（诊断/运维） -->
+        <div class="pane-title" style="font-size:15px;margin:24px 0 6px">🔧 SSH 执行任意命令（诊断/运维用）</div>
+        <div class="pane-desc">不用手动登录服务器，在这里填 SSH 信息并输入命令，直接在你的 VPS 上执行并回显结果。</div>
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-item"><label>服务器 IP <span class="req">*</span></label><input type="text" id="crHost" placeholder="例如 203.0.113.1（你的VPS公网IP）"></div>
+          <div class="form-item"><label>SSH 端口</label><input type="number" id="crPort" value="22"></div>
+          <div class="form-item"><label>SSH 用户名</label><input type="text" id="crUser" value="root"></div>
+          <div class="form-item"><label>SSH 密码</label><input type="password" id="crPass"></div>
+        </div>
+        <textarea id="crCmd" rows="4" style="border:1.5px solid var(--border-strong);border-radius:11px;padding:10px 14px;font-size:12.5px;font-family:ui-monospace,monospace;width:100%;resize:vertical;box-sizing:border-box" placeholder="粘贴要执行的命令，例如：date&#10;或：sqlite3 /usr/local/x-ui/bin/x-ui.db &quot;select id,username,length(password) from users;&quot;"></textarea>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px">
+          <button class="btn btn-primary" id="crRunBtn" onclick="cmdRun()">▶ 执行</button>
+        </div>
+        <div class="node-result" id="crBox" style="display:none;margin-bottom:16px">
+          <div class="nr-head" style="display:flex;justify-content:space-between;align-items:center">⚡ 执行结果<button class="copy-btn" style="position:static" onclick="copyLogEl('crOut')">📋 复制</button></div>
+          <div id="crOut" style="font-size:12.5px;background:#101014;color:#d4d4d8;border-radius:8px;padding:12px;font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow:auto;max-height:480px"></div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="backToHero()">← 返回</button>
+        </div>
+      </div>
+
+      <!-- 面板急救箱 -->
+      <div class="step-pane" data-pane="rescue">
+        <div class="pane-title">🩹 面板急救箱</div>
+        <div class="pane-desc">忘记密码？登录提示「用户名、密码或双重验证码无效」？面板卡死？在这里通过 SSH 直接修复，不需要登录面板。</div>
+
+        <div class="hint-box">💡
+          <div>下面的账号密码是 <b>VPS 的 SSH 登录信息</b>（不是面板的）。程序会连上服务器，直接查看或重置 3X-UI 面板的登录凭据。</div>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin-bottom:12px">① 服务器 SSH 信息</div>
+        <div class="form-grid" style="margin-bottom:20px">
+          <div class="form-item"><label>服务器 IP <span class="req">*</span></label><input type="text" id="rsHost" placeholder="例如 104.17.20.100"></div>
+          <div class="form-item"><label>SSH 端口</label><input type="number" id="rsPort" value="22"></div>
+          <div class="form-item"><label>SSH 用户名</label><input type="text" id="rsUser" value="root"></div>
+          <div class="form-item"><label>SSH 密码 <span class="req">*</span></label><input type="password" id="rsPass" autocomplete="new-password"></div>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin-bottom:12px">② 选择操作</div>
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-item"><label>新面板用户名 <span class="tip">重置时才需要填</span></label><input type="text" id="rsPanelUser" value="admin"></div>
+          <div class="form-item"><label>新面板密码 <span class="tip">重置时才需要填</span></label>
+            <div class="input-with-btn">
+              <input type="text" id="rsPanelPass">
+              <button class="btn btn-secondary btn-sm" onclick="genRescuePw()">🎲</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-secondary" id="rsShowBtn" onclick="rescueAction('show')">🔍 查看当前账号密码</button>
+          <button class="btn btn-primary" id="rsResetBtn" onclick="rescueAction('reset')">🔑 重置账号密码并重启</button>
+          <button class="btn btn-secondary" id="rsRestartBtn" onclick="rescueAction('restart')">🔄 仅重启面板</button>
+          <button class="btn btn-secondary" id="rs2faBtn" onclick="rescueAction('disable2fa')">🔐 登录总提示验证码？关闭两步验证</button>
+        </div>
+
+        <div class="hint-box" style="margin-top:12px">
+          💡 <b>登不进先别急着重置：</b>面板自带防爆破，连续输错会被临时封掉你的 IP——此时<b>哪怕账号密码全对也会报「无效」</b>。先试两招：① 用<b>手机热点</b>打开面板登录；② 点上面的「🔄 仅重启面板」清空封禁记录。都不行再来重置账号密码。
+        </div>
+
+        <div class="conn-status" id="rsStatus"></div>
+
+        <div class="term-wrap" style="margin-top:16px;display:none" id="rsTermWrap">
+          <div class="term-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="title">root@<span id="rsTermHost">server</span> — 急救操作</div>
+            <button class="copy-btn" onclick="copyRsTerm()">📋 复制日志</button>
+          </div>
+          <div id="rsTerminal" style="padding:12px 14px;min-height:160px;max-height:260px"></div>
+        </div>
+
+        <div class="hint-box success" id="rsResultBox" style="display:none">✅
+          <div id="rsResultText"></div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="backToHero()">← 返回</button>
+        </div>
+      </div>
+
+      <!-- 域名与 HTTPS -->
+      <div class="step-pane" data-pane="domain">
+        <div class="pane-title">🌐 域名与 HTTPS</div>
+        <div class="pane-desc">给已部署的面板绑定域名、开启 HTTPS（加密访问，防止密码被窃听），并在这里实时查看解析与证书状态。全程不用碰命令行。</div>
+
+        <div class="hint-box">💡
+          <div>开始前请确认：① 你已购买域名；② 在 DNS 服务商处把域名 <b>A 记录指向这台服务器 IP</b>；③ 服务器 <b>80 端口</b>能从公网访问（申请证书要用）。不确定可先点「检查域名解析」。</div>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin-bottom:12px">① 服务器 SSH 信息 & 域名</div>
+        <div class="form-grid" style="margin-bottom:20px">
+          <div class="form-item"><label>服务器 IP <span class="req">*</span></label><input type="text" id="dmHost" placeholder="例如 104.17.20.100"></div>
+          <div class="form-item"><label>SSH 端口</label><input type="number" id="dmPort" value="22"></div>
+          <div class="form-item"><label>SSH 用户名</label><input type="text" id="dmUser" value="root"></div>
+          <div class="form-item"><label>SSH 密码 <span class="req">*</span></label><input type="password" id="dmPass" autocomplete="new-password"></div>
+          <div class="form-item"><label>域名 <span class="tip">如 panel.xx.com，需已解析到本机</span></label><input type="text" id="dmDomain" placeholder="panel.yourdomain.com"></div>
+          <div class="form-item"><label>邮箱 <span class="tip">申请证书用，可留空</span></label><input type="text" id="dmEmail" placeholder="admin@yourdomain.com"></div>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin-bottom:12px">② 操作</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-secondary" id="dmCheckBtn" onclick="domainCheck()">🔍 检查域名解析</button>
+          <button class="btn btn-secondary" id="dmSslBtn" onclick="sslStatus()">🔒 检查 HTTPS 状态</button>
+          <button class="btn btn-primary" id="dmEnableBtn" onclick="sslEnable()">🚀 一键申请并开启 HTTPS</button>
+        </div>
+
+        <div class="conn-status" id="dmStatus"></div>
+
+        <div id="dmCards" style="margin-top:16px"></div>
+
+        <div class="term-wrap" style="margin-top:16px;display:none" id="dmLogWrap">
+          <div class="term-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="title">root@<span id="dmLogHost">server</span> — 证书申请</div>
+            <button class="copy-btn" onclick="copyLogEl('dmLog')">📋 复制日志</button>
+          </div>
+          <div id="dmLog" style="padding:12px 14px;min-height:180px;max-height:300px;background:#101014;color:#d4d4d8;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre-wrap;overflow:auto"></div>
+        </div>
+
+        <div class="hint-box success" id="dmResultBox" style="display:none;margin-top:14px">✅
+          <div id="dmResultText"></div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="backToHero()">← 返回</button>
+        </div>
+      </div>
+
+      <!-- 可视化创建节点 -->
+      <div class="step-pane" data-pane="node">
+        <div class="pane-title">🛰️ 创建节点</div>
+        <div class="pane-desc">在已部署好的 3X-UI 面板里一键创建一个可连接的节点（入站+客户端），连面板都不用进，自动生成二维码/订阅链接给你。原理和你在面板里手动创建完全一样（都是往同一个数据库写一条入站）。</div>
+
+        <div class="hint-box">💡
+          <div>下面填的是 <b>VPS 的 SSH 登录信息</b>（不是面板账号）。程序会连上服务器，自动生成密钥、创建入站并重启面板。</div>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin:18px 0 12px">① 服务器 SSH 信息</div>
+        <div class="form-grid">
+          <div class="form-item"><label>服务器 IP <span class="req">*</span></label><input type="text" id="ndHost" placeholder="例如 104.17.20.100"></div>
+          <div class="form-item"><label>SSH 端口</label><input type="number" id="ndPort" value="22"></div>
+          <div class="form-item"><label>SSH 用户名</label><input type="text" id="ndUser" value="root"></div>
+          <div class="form-item"><label>SSH 密码 <span class="req">*</span></label><input type="password" id="ndPass" autocomplete="new-password"></div>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin:18px 0 12px">② 选择协议</div>
+        <div class="proto-cards">
+          <label class="proto-card proto-on" onclick="pickProto(this,'vless-reality')">
+            <input type="radio" name="proto" value="vless-reality" checked hidden>
+            <div class="proto-name">⚡ VLESS + Reality</div>
+            <div class="proto-desc">推荐·无需域名证书·防探测强·速度最快</div>
+          </label>
+          <label class="proto-card" onclick="pickProto(this,'vmess-ws-tls')">
+            <input type="radio" name="proto" value="vmess-ws-tls" hidden>
+            <div class="proto-name">🌐 VMess + WS + TLS</div>
+            <div class="proto-desc">需先开启 HTTPS（已有证书）· 通用性好</div>
+          </label>
+        </div>
+
+        <div class="pane-title" style="font-size:14.5px;margin:18px 0 12px">③ 节点设置</div>
+        <div class="form-grid">
+          <div class="form-item"><label>节点名称 <span class="tip">给自己看的备注</span></label><input type="text" id="ndRemark" value="我的节点1"></div>
+          <div class="form-item"><label>节点端口 <span class="tip">勿与面板端口冲突</span></label><input type="number" id="ndNodePort" value="443"></div>
+          <div class="form-item" id="ndDestWrap"><label>伪装目标 (dest) <span class="tip">Reality 借它握手，选一个大站即可</span></label>
+            <select id="ndDest" onchange="ndDestChanged()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border-strong);border-radius:10px;font-size:13px;background:var(--bg);color:var(--text)">
+              <option value="www.cloudflare.com:443" data-sni="www.cloudflare.com">Cloudflare（推荐）</option>
+              <option value="www.microsoft.com:443" data-sni="www.microsoft.com">Microsoft</option>
+              <option value="www.intel.com:443" data-sni="www.intel.com,intel.com">Intel</option>
+              <option value="www.amazon.com:443" data-sni="www.amazon.com,amazon.com">Amazon</option>
+              <option value="__custom__">自定义（手动填写）</option>
+            </select>
+            <input type="text" id="ndDestCustom" placeholder="例如 www.apple.com:443" style="display:none;margin-top:8px" autocomplete="off">
+          </div>
+          <div class="form-item" id="ndSniWrap"><label>SNI <span class="tip">一般=目标域名，去掉:443；可填多个用逗号分隔</span></label><input type="text" id="ndSni" value="www.cloudflare.com"></div>
+          <div class="form-item" style="display:flex;justify-content:flex-end;margin-top:-4px">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openRealityScan()">🔍 扫描可用伪装目标</button>
+          </div>
+          <div class="form-item" id="ndWsWrap" style="display:none"><label>WS 路径 <span class="tip">VMess 用，如 /vmess</span></label><input type="text" id="ndWsPath" value="/vmess"></div>
+        </div>
+
+        <div class="hint-box" id="ndProtoHint" style="margin:6px 0 14px">
+          💡 <b>VLESS + Reality</b>：不用绑域名、不用证书。创建节点后到 <b>面板 → 入站列表 → 该节点 → 添加客户端</b>，⚠️ Flow 必须选 <code>xtls-rprx-vision</code>（不选连不上）。伪装目标推荐 Cloudflare。
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="ndCreateBtn" onclick="nodeCreate()">🚀 一键创建节点</button>
+          <button class="btn btn-secondary" id="ndListBtn" onclick="nodeList()">🔍 检查已有节点</button>
+          <button class="btn btn-secondary" id="ndRestartBtn" onclick="nodeRestart()">🔄 重启面板</button>
+        </div>
+
+        <div class="conn-status" id="ndStatus"></div>
+
+        <div class="term-wrap" style="margin-top:16px;display:none" id="ndLogWrap">
+          <div class="term-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="title">root@<span id="ndLogHost">server</span> — 创建节点</div>
+            <button class="copy-btn" onclick="copyLogEl('ndLog')">📋 复制日志</button>
+          </div>
+          <div id="ndLog" style="padding:12px 14px;min-height:180px;max-height:300px;background:#101014;color:#d4d4d8;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre-wrap;overflow:auto"></div>
+        </div>
+
+        <div class="node-result" id="ndResultBox" style="display:none">
+          <div class="nr-head">✅ 节点创建成功</div>
+          <div class="nr-info" id="ndInfo" style="margin-top:10px"></div>
+          <div class="hint-box warn" style="margin-top:14px">⚠️
+            <div><b>下一步</b>：到 <b>面板 → 入站列表 → 该节点 → 添加客户端</b>，⚠️ Flow 选 <code>xtls-rprx-vision</code>。记得放行 VPS 安全组的节点端口（TCP）。</div>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-ghost" onclick="backToHero()">← 返回</button>
+        </div>
+
+        <div class="node-result" id="ndListBox" style="display:none;margin-top:16px">
+          <div class="nr-head">🔍 面板已有节点（读取自 VPS 数据库）</div>
+          <div id="ndListBody" style="font-size:13px"></div>
+        </div>
+
+        <div class="node-result" id="ndDiagBox" style="display:none;margin-top:16px">
+          <div class="nr-head" style="display:flex;align-items:center;justify-content:space-between">
+            <span>🔌 节点诊断（面板状态 / xray / 端口 / 防火墙 / 日志）</span>
+            <button class="btn btn-secondary btn-sm" onclick="copyLogEl('ndDiagBody')">📋 复制结果</button>
+          </div>
+          <div id="ndDiagBody" style="font-size:12.5px;background:#101014;color:#d4d4d8;border-radius:8px;padding:12px;font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow:auto;max-height:420px"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  3X-UI 一键安装器 · 基于 <a href="https://github.com/MHSanaei/3x-ui" target="_blank">MHSanaei/3x-ui</a> 官方脚本 ·
+  配色 & 风格来自 <a href="https://czlab.dev" target="_blank">村长实验室</a> ·
+  仅供个人学习与合法用途，请遵守当地法律法规
+</footer>
+
+<div id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/xterm/lib/xterm.js"></script>
+<script src="/vendor/xterm-addon-fit/lib/addon-fit.js"></script>
+<script>
+/* ================================================== */
+const socket = io();
+const $ = (id) => document.getElementById(id);
+const toastEl = $('toast');
+let toastTimer = null;
+function toast(msg) {
+  toastEl.textContent = msg; toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+}
+
+/* ---------- 域名/HTTPS 实时日志 ---------- */
+socket.on('ssl:log', (d) => {
+  const el = $('dmLog');
+  if (el) { el.textContent += (d.text || '') + '\n'; el.scrollTop = el.scrollHeight; }
+});
+socket.on('ssl:result', (d) => {
+  const btn = $('dmEnableBtn'); if (btn) btn.disabled = false;
+  const el = $('dmLog');
+  if (el) { el.textContent += '\n=== ' + (d.ok ? '成功' : '失败') + ' ===\n'; if (!d.ok && d.output) el.textContent += String(d.output) + '\n'; }
+  $('dmStatus').className = 'conn-status ' + (d.ok ? 'ok' : 'fail');
+  $('dmStatus').innerHTML = '<span>' + (d.ok ? '✓' : '✕') + '</span><span>' + (d.ok ? 'HTTPS 已开启' : '申请失败') + '</span>';
+  if (d.ok) {
+    const dom = $('dmDomain').value.trim();
+    $('dmResultBox').style.display = '';
+    $('dmResultText').innerHTML = '面板已切换到 <b>HTTPS 加密访问</b> 🔒<br>请用下方地址登录（<b>务必带上你的访问路径</b>）：<br><b>https://' + dom + ':' + ($('dmPort').value || '') + '/</b><br>若打不开，先确认域名解析已生效、云控制台已放行面板端口（TCP）。';
+  }
+});
+
+/* ---------- 节点创建 实时日志 ---------- */
+socket.on('node:log', (d) => {
+  const el = $('ndLog');
+  if (el) { el.textContent += (d.text || '') + '\n'; el.scrollTop = el.scrollHeight; }
+});
+socket.on('node:result', (d) => {
+  const btn = $('ndCreateBtn'); if (btn) btn.disabled = false;
+  if (d.ok) {
+    const box = $('ndResultBox');
+    box.style.display = '';
+    $('ndInfo').innerHTML =
+      '<b>协议：</b>' + (d.protocol || '') + ' ｜ <b>端口：</b>' + d.port + ' ｜ <b>节点名：</b>' + (d.remark || '') + '<br><br>' +
+      (d.message || '').replace(/\n/g, '<br>');
+    $('ndStatus').className = 'conn-status ok';
+    $('ndStatus').innerHTML = '<span>✓</span><span>入站节点创建成功，请到面板添加客户端</span>';
+  } else {
+    $('ndLog').textContent += '\n=== 失败 ===\n' + (d.output || '') + '\n';
+    $('ndStatus').className = 'conn-status fail';
+    $('ndStatus').innerHTML = '<span>✕</span><span>创建失败，详见上方日志</span>';
+  }
+});
+
+/* ---------- 步骤切换 ---------- */
+function goStep(n) {
+  $('wizard').style.display = '';
+  $('hero').style.display = n === 'cmd' ? '' : 'none';
+  document.querySelectorAll('.step-pane').forEach(p => p.classList.toggle('show', p.dataset.pane === String(n)));
+  document.querySelectorAll('.step-item').forEach(s => {
+    const sn = parseInt(s.dataset.step);
+    s.classList.toggle('active', sn === n);
+    s.classList.toggle('done', typeof n === 'number' && sn < n);
+  });
+  if (n === 2) initStep2();
+  if (n === 3) initTerm();
+  if (n === 'rescue') { $('stepsBar').style.display = 'none'; initRescueTerm(); }
+  else if (n === 'domain') { $('stepsBar').style.display = 'none'; }
+  else if (n === 'node') { $('stepsBar').style.display = 'none'; syncProtoState(); }
+  else if (n === 'cmd') {
+    $('stepsBar').style.display = 'none';
+    renderCmd();
+  } else {
+    $('stepsBar').style.display = '';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function backToHero() {
+  $('hero').style.display = '';
+  $('wizard').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- 表单辅助 ---------- */
+function toggleAuthMode() {
+  const isKey = $('authType').value === 'key';
+  $('passwordField').style.display = isKey ? 'none' : '';
+  $('keyField').style.display = isKey ? '' : 'none';
+}
+function togglePw(id, btn) {
+  const el = $(id);
+  const show = el.type === 'password';
+  el.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈 隐藏' : '👁 显示';
+}
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function genPassword() {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let pw = '';
+  for (let i = 0; i < 14; i++) pw += chars[randInt(0, chars.length - 1)];
+  $('panelPass').value = pw;
+  if ($('cPanelPass')) { $('cPanelPass').value = pw; renderCmd(); }
+  updatePwMeter();
+  toast('已生成随机密码，记得保存好');
+}
+function pwStrength(pw) {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(s, 4);
+}
+function updatePwMeter() {
+  const pw = $('panelPass').value;
+  const lv = pwStrength(pw);
+  const bar = $('pwBar');
+  const colors = ['#fca5a5', '#fdba74', '#fde047', '#86efac', '#10b981'];
+  bar.style.width = pw ? (lv + 1) * 25 + '%' : '0';
+  bar.style.background = colors[lv];
+}
+function markInvalid(id, invalid) {
+  $(id).closest('.form-item').classList.toggle('invalid', invalid);
+}
+
+/* ---------- 步骤 1 ---------- */
+function collectServerCfg() {
+  return {
+    host: $('host').value.trim(),
+    sshPort: Number($('sshPort').value) || 22,
+    sshUser: $('sshUser').value.trim() || 'root',
+    password: $('authType').value === 'password' ? $('sshPass').value : '',
+    privateKey: $('authType').value === 'key' ? $('sshKey').value.trim() : '',
+  };
+}
+function testConnection() {
+  const cfg = collectServerCfg();
+  if (!cfg.host) { markInvalid('host', true); return; }
+const btn = $('testBtn');
+  const status = $('connStatus');
+  // 缺密码/私钥时不要发起连接，否则会被报成「认证失败」，误导排查方向
+  if ($('authType').value === 'key' && !cfg.privateKey) {
+    markInvalid('sshKey', true);
+    status.className = 'conn-status fail';
+    status.innerHTML = '<span>✕</span><span>请先粘贴私钥内容</span>';
+    return;
+  }
+  if ($('authType').value === 'password' && !cfg.password.trim()) {
+    markInvalid('sshPass', true);
+    status.className = 'conn-status fail';
+    status.innerHTML = '<span>✕</span><span>请先填写 SSH 密码</span>';
+    return;
+  }
+  btn.disabled = true;
+  status.className = 'conn-status';
+  status.innerHTML = '<div class="spinner"></div><span>正在连接 ' + cfg.host + ' …</span>';
+  socket.emit('ssh:test', cfg, (res) => {
+    btn.disabled = false;
+    if (res.ok) {
+      status.className = 'conn-status ok';
+      status.innerHTML = '<span>✓</span><span>' + res.msg + '，可以进入下一步了</span>';
+    } else {
+      status.className = 'conn-status fail';
+      status.innerHTML = '<span>✕</span><span>' + res.msg + '</span>';
+    }
+  });
+  setTimeout(() => { if (btn.disabled) { btn.disabled = false; status.className = 'conn-status fail'; status.innerHTML = '<span>✕</span><span>连接测试超时（45 秒无响应），请检查网络或服务器状态</span>'; } }, 45000);
+}
+function validateStep1() {
+  const cfg = collectServerCfg();
+  let ok = true;
+  markInvalid('host', !cfg.host); if (!cfg.host) ok = false;
+  markInvalid('sshPass', $('authType').value === 'password' && !cfg.password);
+  if ($('authType').value === 'password' && !cfg.password) ok = false;
+  if (!ok) { toast('请填写带 * 的必填项'); return; }
+  goStep(2);
+}
+
+/* ---------- 步骤 2 ---------- */
+// Cloudflare 代理支持的端口（HTTP:80/8080/8880/2052/2082/2086/2095；HTTPS:443/2053/2083/2087/2096/8443）
+// 用域名（CF 代理）时这些端口才会被代理转发，否则 CF 直接拒绝；用 IP 直连不受限
+const CF_FRIENDLY_PORTS = [443, 2053, 8443, 2096, 2083, 2087, 2052, 2095, 80, 8080, 8880, 2082, 2086];
+function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function randCfPort() { return CF_FRIENDLY_PORTS[Math.floor(Math.random() * CF_FRIENDLY_PORTS.length)]; }
+function initStep2() {
+  if (!$('panelPass').value) genPassword();
+  if (!$('panelPort').value) $('panelPort').value = randCfPort();
+  $('panelPass').addEventListener('input', updatePwMeter);
+  updatePwMeter();
+}
+function collectFullCfg() {
+  const cfg = collectServerCfg();
+  cfg.panelUser = $('panelUser').value.trim() || 'admin';
+  cfg.panelPass = $('panelPass').value;
+  cfg.panelPort = Number($('panelPort').value) || randInt(10000, 65535);
+  cfg.basePath = $('basePath').value.trim();
+  cfg.useProxy = $('useProxy').checked;
+  // 域名清洗：去掉协议头、路径、端口和首尾空格，只保留纯域名
+  cfg.domain = $('domain').value.trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .replace(/:\d+$/, '')
+    .toLowerCase();
+  return cfg;
+}
+
+/* ---------- 命令模式 ---------- */
+function buildCmdArgs(user, pass, port, path) {
+  return ['y', user, pass, String(port), path || ''].map(a => `'${String(a).replace(/'/g, `'\\''`)}'`).join(' ');
+}
+function renderCmd() {
+  const user = $('cPanelUser').value.trim() || 'admin';
+  let pass = $('cPanelPass').value;
+  if (!pass) { pass = Math.random().toString(36).slice(2, 12) + 'Aa1'; $('cPanelPass').value = pass; }
+  const port = Number($('cPanelPort').value) || 54321;
+  if (!$('cPanelPort').value) $('cPanelPort').value = port;
+  const path = $('cBasePath').value.trim();
+  const args = buildCmdArgs(user, pass, port, path);
+  // 安装由工具后端执行「多镜像自动切换 + 手动部署」脚本，这里仅展示说明
+  $('cmdOut').textContent =
+    '安装将由工具自动执行「多镜像自动切换 + 手动部署」脚本：\n' +
+    '  1) 自动探测最新版本（直连 GitHub API / 镜像 API，失败回退 v3.6.0）\n' +
+    '  2) 依次尝试下载源：直连 github.com → ghfast.top → ghproxy.net → gh-proxy.com → ghproxy.cc，任一成功即用\n' +
+    '  3) 解压部署到 /usr/local/x-ui + 注册 systemd 服务 + 启动\n' +
+    '  4) 数据库直写管理员账号（bcrypt 加密）并设置面板端口/路径\n' +
+    '  5) 重启面板并回显最终访问地址\n' +
+    '\n无需手动执行官方脚本。如需手动安装，可自行在服务器执行官方脚本：\n' +
+    `printf '%s\\n' ${args} | bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)`;
+}
+['cPanelUser','cPanelPass','cPanelPort','cBasePath'].forEach(id => {
+  window.addEventListener('load', () => $(id).addEventListener('input', renderCmd));
+});
+
+/* ---------- SSH 执行任意命令 ---------- */
+function cmdRun() {
+  const server = {
+    host: $('crHost').value.trim(),
+    sshPort: Number($('crPort').value) || 22,
+    sshUser: $('crUser').value.trim() || 'root',
+    password: $('crPass').value,
+  };
+  const command = $('crCmd').value.trim();
+  if (!server.host) { toast('请填写服务器 IP'); return; }
+  if (!command) { toast('请粘贴要执行的命令'); return; }
+  const btn = $('crRunBtn'); btn.disabled = true;
+  const box = $('crBox'); box.style.display = '';
+  $('crOut').textContent = '正在连接服务器执行…';
+  socket.emit('cmd:run', { server, command }, (d) => {
+    btn.disabled = false;
+    if (!d || !d.ok) { $('crOut').textContent = '❌ 执行失败：' + ((d && d.output) || '未知错误'); return; }
+    $('crOut').textContent = d.output || '（无输出）';
+  });
+}
+
+/* ---------- 终端 ---------- */
+let term = null, fitAddon = null, termReady = false;
+function initTerm() {
+  if (termReady) { term.clear(); return; }
+  term = new Terminal({
+    fontSize: 12.5,
+    fontFamily: 'ui-monospace, "SF Mono", Consolas, "Courier New", monospace',
+    theme: {
+      background: '#101014',
+      foreground: '#d4d4d8',
+      cursor: '#6d4aff',
+      green: '#4ade80',
+      yellow: '#fde047',
+      red: '#f87171',
+    },
+    convertEol: true,
+    scrollback: 5000,
+  });
+  fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+  term.open($('terminal'));
+  fitAddon.fit();
+  window.addEventListener('resize', () => termReady && fitAddon.fit());
+  termReady = true;
+}
+function termWrite(text) {
+  if (!termReady) return;
+  term.write(text.replace(/\x1b\[[0-9;]*[A-Za-z]/g, ''));
+}
+
+/* ---------- 安装流程 ---------- */
+let installing = false;
+function setStage(n) {
+  document.querySelectorAll('.stage').forEach(s => {
+    const sn = parseInt(s.dataset.stage);
+    s.classList.toggle('done', sn < n);
+    s.classList.toggle('running', sn === n);
+    const icon = s.querySelector('.icon');
+    if (sn === n) icon.innerHTML = '<div class="spinner"></div>';
+    else if (sn < n) icon.innerHTML = '✓';
+    else icon.innerHTML = String(sn);
+  });
+}
+function startInstall() {
+  const cfg = collectFullCfg();
+  if (!cfg.panelPass || cfg.panelPass.length < 8) {
+    markInvalid('panelPass', true); toast('面板密码至少 8 位'); return;
+  }
+  markInvalid('panelPass', false);
+  $('termHost').textContent = cfg.host;
+  installing = true;
+  goStep(3);
+  setStage(1);
+  socket.emit('install:start', cfg);
+}
+function abortInstall() {
+  if (!confirm('确定要中止安装吗？服务器上的半成品安装可能需要手动清理。')) return;
+  socket.emit('install:abort');
+}
+socket.on('stage', (d) => setStage(d.stage));
+socket.on('term', (line) => termWrite(line));
+socket.on('cmd', (d) => {
+  termWrite('\r\n\x1b[90m$ ' + d.text + '\x1b[0m\r\n\r\n');
+});
+socket.on('log', (d) => termWrite('\x1b[90m[安装器] ' + d.text + '\x1b[0m\r\n'));
+socket.on('install:done', (d) => {
+  installing = false;
+  setStage(4);
+  setTimeout(() => {
+    goStep(4);
+    $('rUrl').textContent = d.url;
+    $('rUrl').onclick = openPanel;
+    $('rUser').textContent = d.username || '—';
+    $('rPass').textContent = d.password || '—';
+    $('openPanelBtn').dataset.url = d.url;
+    $('sslHint').style.display = d.domain ? '' : 'none';
+    // Cloudflare 代理端口检查：域名+端口不在 CF 支持列表 → 域名访问会被 CF 拒绝
+    const cfWarn = $('cfPortWarn');
+    if (cfWarn) {
+      if (d.domain && d.port && CF_FRIENDLY_PORTS.indexOf(Number(d.port)) === -1) {
+        cfWarn.innerHTML = '⚠️ <b>域名可能打不开</b>：端口 <b>' + d.port + '</b> 不在 Cloudflare 代理支持列表（仅支持 443 / 2053 / 2083 / 2087 / 2096 / 8443 / 80 / 8080 等）。若你启用了 CF 代理（橙色云云），请把端口改成 <b>443</b> 后重装，或暂时改成仅 DNS 模式。直连 IP 访问不受影响（<b>' + (d.ipUrl || '') + '</b>）。';
+        cfWarn.style.display = '';
+      } else { cfWarn.style.display = 'none'; }
+    }
+    // 配置端口 vs 实际监听端口不一致警告
+    const pw = $('portWarn');
+    if (pw) {
+      if (d.portWarn) { pw.innerHTML = d.portWarn; pw.style.display = ''; }
+      else { pw.style.display = 'none'; }
+    }
+    // 首页实测探测未通过提示（链接必须带路径）
+    const prw = $('probeWarn');
+    if (prw) {
+      if (d.probeWarn) { prw.innerHTML = d.probeWarn; prw.style.display = ''; }
+      else { prw.style.display = 'none'; }
+    }
+    if (d.domain && d.ipUrl) {
+      $('sslHint').querySelector('div').innerHTML =
+        '你绑定了域名，当前仍是 <b>http 明文访问</b>。建议登录面板后进入 <b>面板设置 → SSL 证书</b>，一键申请证书，之后即可用 <b>https</b> 加密访问面板，登录密码不再裸奔。' +
+        '<br>若域名暂时打不开（DNS 未生效），可先用 IP 地址访问：<b>' + d.ipUrl + '</b>';
+    }
+    toast('安装完成 🎉');
+  }, 800);
+});
+socket.on('install:failed', (d) => {
+  installing = false;
+  document.querySelectorAll('.stage.running .icon').forEach(i => i.innerHTML = '✕');
+  document.querySelectorAll('.stage.running').forEach(s => {
+    s.classList.remove('running');
+    s.querySelector('.icon').style.cssText = 'background:var(--danger-soft);border-color:#fecaca;color:var(--danger)';
+    s.querySelector('.txt').innerHTML += ' <span style="color:var(--danger)">— ' + d.error + '</span>';
+  });
+  termWrite('\r\n\r\n\x1b[31m[安装失败] ' + d.error + '\x1b[0m\r\n');
+  termWrite('\x1b[90m排查建议：1) 检查 IP/密码 2) 确认 VPS 系统为 Ubuntu 20.04+/Debian 11+/CentOS 8+ 3) 已自动尝试多个 GitHub 镜像，仍失败说明服务器外网受限 4) 更换端口重试\x1b[0m\r\n');
+});
+function openPanel() {
+  const url = $('openPanelBtn').dataset.url;
+  if (url) window.open(url, '_blank');
+}
+
+/* ---------- 复制 ---------- */
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied'); btn.textContent = '✓ 已复制';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '复制'; }, 1600);
+  });
+}
+function copyCmd(btn) { copyText($('cmdOut').textContent, btn); }
+
+/* ---------- 面板急救箱 ---------- */
+let rsTerm = null, rsTermReady = false;
+function initRescueTerm() {
+  if (rsTermReady) return;
+  rsTerm = new Terminal({
+    fontSize: 12.5,
+    fontFamily: 'ui-monospace, "SF Mono", Consolas, "Courier New", monospace',
+    theme: { background: '#101014', foreground: '#d4d4d8', cursor: '#6d4aff', green: '#4ade80', yellow: '#fde047', red: '#f87171' },
+    convertEol: true, scrollback: 2000,
+  });
+  const fit = new FitAddon.FitAddon();
+  rsTerm.loadAddon(fit);
+  rsTerm.open($('rsTerminal'));
+  fit.fit();
+  window.addEventListener('resize', () => rsTermReady && fit.fit());
+  rsTermReady = true;
+}
+function rsWrite(t) { if (rsTermReady) rsTerm.write(String(t).replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')); }
+function genRescuePw() {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let pw = '';
+  for (let i = 0; i < 14; i++) pw += chars[randInt(0, chars.length - 1)];
+  $('rsPanelPass').value = pw;
+  toast('已生成随机密码，记得保存');
+}
+function rescueAction(action) {
+  const server = {
+    host: $('rsHost').value.trim(),
+    sshPort: Number($('rsPort').value) || 22,
+    sshUser: $('rsUser').value.trim() || 'root',
+    password: $('rsPass').value,
+  };
+  if (!server.host || !server.password) { toast('请填写服务器 IP 和 SSH 密码'); return; }
+  const data = { server, action };
+  if (action === 'reset') {
+    const u = $('rsPanelUser').value.trim() || 'admin';
+    const p = $('rsPanelPass').value;
+    if (!p || p.length < 8) { toast('新密码至少 8 位'); return; }
+    data.panelUser = u; data.panelPass = p;
+  }
+  const btnMap = { show: 'rsShowBtn', reset: 'rsResetBtn', restart: 'rsRestartBtn', disable2fa: 'rs2faBtn' };
+  const btn = $(btnMap[action]);
+  btn.disabled = true;
+  $('rsStatus').className = 'conn-status';
+  $('rsStatus').innerHTML = '<div class="spinner"></div><span>正在连接服务器执行操作…</span>';
+  $('rsResultBox').style.display = 'none';
+  goStep('rescue');
+  $('rsTermWrap').style.display = '';
+  $('rsTermHost').textContent = server.host;
+  rsWrite('$ 正在通过 SSH 连接 ' + server.host + ' …\r\n');
+
+  socket.emit('rescue:run', data, (res) => {
+    btn.disabled = false;
+    if (res.ok) {
+      $('rsStatus').className = 'conn-status ok';
+      $('rsStatus').innerHTML = '<span>✓</span><span>操作成功</span>';
+      rsWrite(res.output + '\r\n');
+      if (action === 'disable2fa') {
+        $('rsResultBox').style.display = '';
+        $('rsResultText').innerHTML = '两步验证（2FA）已关闭并重启面板，登录页只剩用户名+密码两项，请重新尝试登录。';
+      }
+      const s = res.settings || {};
+      if (s.username || s.port) {
+        const basePath = s.webBasePath || '/';
+        const url = 'http://' + server.host + ':' + (s.port || '') + basePath;
+        $('rsResultBox').style.display = '';
+        let twoFAText = '';
+        if (s.twoFA) twoFAText = '<br>两步验证：<b>' + (['true', '1', 'yes'].includes(String(s.twoFA).toLowerCase()) ? '已开启 ⚠️（若登录页有验证码框，点急救箱的「关闭两步验证」）' : '未开启') + '</b>';
+        $('rsResultText').innerHTML =
+          '面板地址：<b>' + url + '</b><br>真实管理员用户名：<b>' + (s.username || '-') + '</b> ｜ 端口：<b>' + (s.port || '-') + '</b> ｜ 路径：<b>' + basePath + '</b>' +
+          twoFAText +
+          (action === 'reset' ? '<br>密码已重置为你上面填写的 <b>' + data.panelPass + '</b>，现在用上方用户名+密码登录即可。' : '<br>密码出于安全不直接显示，如忘记请用「重置账号密码」。');
+      }
+    } else {
+      $('rsStatus').className = 'conn-status fail';
+      $('rsStatus').innerHTML = '<span>✕</span><span>' + res.output + '</span>';
+      rsWrite('[失败] ' + res.output + '\r\n');
+    }
+  });
+  setTimeout(() => { if (btn.disabled) { btn.disabled = false; $('rsStatus').className = 'conn-status fail'; $('rsStatus').innerHTML = '<span>✕</span><span>操作超时，请检查网络和服务器状态</span>'; } }, 60000);
+}
+
+/* ---------- 域名与 HTTPS ---------- */
+function collectDmServer() {
+  const host = $('dmHost').value.trim();
+  const password = $('dmPass').value;
+  if (!host || !password) return null;
+  return { host, sshPort: Number($('dmPort').value) || 22, sshUser: $('dmUser').value.trim() || 'root', password };
+}
+function setDmStatus(kind, msg) {
+  const el = $('dmStatus');
+  el.className = 'conn-status' + (kind === 'loading' ? '' : (kind === 'ok' ? ' ok' : (kind === 'fail' ? ' fail' : '')));
+  el.innerHTML = kind === 'loading'
+    ? '<div class="spinner"></div><span>' + msg + '</span>'
+    : '<span>' + (kind === 'ok' ? '✓' : '✕') + '</span><span>' + msg + '</span>';
+}
+function dmCard(title, badge, body) {
+  return '<div class="status-card"><div class="sc-title">' + title + (badge ? ' <span class="sc-badge">' + badge + '</span>' : '') + '</div><div class="sc-body">' + body + '</div></div>';
+}
+function renderDomainCards(res) {
+  const match = res.match, ping = res.pingOk;
+  let html = '<div class="status-cards">';
+  html += dmCard('域名解析', match ? '已指向本机 ✓' : '未指向本机 ✗',
+    '域名解析到：<b>' + (res.resolvedIps.join('、') || '无') + '</b><br>本机公网 IP：<b>' + (res.pubIp || '未知') + '</b><br>' +
+    (match ? '<span style="color:#059669">✓ 一致，可以开启 HTTPS</span>' : '<span style="color:#dc2626">✗ 不一致，请先在 DNS 把域名 A 记录指向 ' + (res.pubIp || '本机IP') + '</span>'));
+  html += dmCard('网络连通 (Ping)', ping ? '可达 ✓' : '未通 ✗',
+    (res.pingSummary || (ping ? '域名可正常访问' : '无法 Ping 通（服务器可能禁 ICMP，不影响 HTTPS）')));
+  html += '</div>';
+  $('dmCards').innerHTML = html;
+}
+function renderSslCards(res) {
+  let html = '<div class="status-cards">';
+  html += dmCard('HTTPS 状态', res.httpsActive ? '已启用 🔒' : '未启用',
+    (res.httpsActive ? '面板已通过 HTTPS 加密访问' : '当前为 http 明文，密码在网络上裸奔，建议开启') +
+    (res.httpsExpiry ? '<br>证书到期：<b>' + res.httpsExpiry + '</b>' : ''));
+  html += dmCard('证书配置', res.certConfigured ? '已配置 ✓' : '未配置',
+    res.certFiles.length ? '证书文件：<br>' + res.certFiles.map(f => '• ' + f).join('<br>') : '尚未发现证书文件');
+  html += dmCard('端口监听', (res.port80 ? '80 ✓' : '80 ✗') + ' ｜ ' + (res.port443 ? '443 ✓' : '443 ✗'),
+    '申请证书需 <b>80 端口公网可达</b>；443 为标准 HTTPS 端口（可选）');
+  html += dmCard('HTTPS 访问地址', '', '<b>' + res.httpsUrl + '</b>');
+  html += '</div>';
+  $('dmCards').innerHTML = html;
+}
+function domainCheck() {
+  const server = collectDmServer();
+  const domain = $('dmDomain').value.trim();
+  if (!server || !domain) { toast('请填写服务器 IP、SSH 密码和域名'); return; }
+  setDmStatus('loading', '正在连接服务器检查域名解析…');
+  $('dmCards').innerHTML = '';
+  socket.emit('domain:check', { server, domain }, (res) => {
+    if (!res.ok) { setDmStatus('fail', res.output); return; }
+    setDmStatus('ok', '解析检查完成');
+    renderDomainCards(res);
+  });
+}
+function sslStatus() {
+  const server = collectDmServer();
+  const domain = $('dmDomain').value.trim();
+  if (!server) { toast('请填写服务器 IP 和 SSH 密码'); return; }
+  setDmStatus('loading', '正在检查面板 HTTPS 状态…');
+  socket.emit('ssl:status', { server, domain }, (res) => {
+    if (!res.ok) { setDmStatus('fail', res.output); return; }
+    setDmStatus('ok', '状态检查完成');
+    renderSslCards(res);
+  });
+}
+function sslEnable() {
+  const server = collectDmServer();
+  const domain = $('dmDomain').value.trim();
+  const email = $('dmEmail').value.trim();
+  if (!server || !domain) { toast('请填写服务器 IP、SSH 密码和域名'); return; }
+  if (!confirm('确定为 ' + domain + ' 申请 Let\'s Encrypt 证书并开启 HTTPS？\n前提：域名已解析到本机，且 80 端口公网可达。')) return;
+  const btn = $('dmEnableBtn'); btn.disabled = true;
+  setDmStatus('loading', '正在申请证书（约 1-2 分钟，请稍候）…');
+  $('dmLogWrap').style.display = '';
+  $('dmLog').textContent = '';
+  $('dmResultBox').style.display = 'none';
+  $('dmLogHost').textContent = server.host;
+  socket.emit('ssl:enable', { server, domain, email });
+}
+
+/* 密码输入框回车触发测试连接 */
+window.addEventListener('load', () => {
+  $('sshPass').addEventListener('keydown', e => { if (e.key === 'Enter') testConnection(); });
+});
+
+/* ---------- 节点创建 ---------- */
+function pickProto(el, val) {
+  document.querySelectorAll('.proto-card').forEach(c => c.classList.remove('proto-on'));
+  el.classList.add('proto-on');
+  el.querySelector('input').checked = true;
+  syncProtoState();
+}
+/* 同步协议卡片状态：刷新页面或切到节点页时，根据当前选中的 radio 显示对应表单项 */
+function syncProtoState() {
+  const checked = document.querySelector('.proto-card input:checked');
+  if (!checked) return;
+  const val = checked.value;
+  const isReality = val === 'vless-reality';
+  $('ndDestWrap').style.display = isReality ? '' : 'none';
+  $('ndSniWrap').style.display = isReality ? '' : 'none';
+  $('ndWsWrap').style.display = isReality ? 'none' : '';
+  $('ndProtoHint').innerHTML = isReality
+    ? '💡 <b>VLESS + Reality</b>：不用绑域名、不用证书。伪装目标选一个大站即可（推荐 Cloudflare），面板会自动用它生成密钥。创建完成后请到 <b>3X-UI 面板 → 入站列表 → 该节点 → 添加客户端</b>，⚠️ <b>添加客户端时「Flow」必须选 `xtls-rprx-vision`</b>（不选会连不上！）——添加客户端的动作同时让节点生效。'
+    : '💡 <b>VMess + WS + TLS</b>：需要先开启 HTTPS（之前做过的「一键申请并开启 HTTPS」），会直接复用面板的证书。节点用 WS 伪装，通用性好。';
+  if (isReality) ndDestChanged();
+}
+/* 伪装目标下拉框：选预设自动填 SNI，选「自定义」显示手动输入框 */
+function ndDestChanged() {
+  const sel = $('ndDest');
+  if (!sel) return;
+  if (sel.value === '__custom__') {
+    $('ndDestCustom').style.display = '';
+    return;
+  }
+  $('ndDestCustom').style.display = 'none';
+  const opt = sel.options[sel.selectedIndex];
+  $('ndSni').value = (opt && opt.dataset && opt.dataset.sni) || '';
+}
+/* 读取当前实际使用的伪装目标（下拉框或自定义输入框） */
+function ndCurrentDest() {
+  const sel = $('ndDest');
+  if (sel.value === '__custom__') {
+    const v = $('ndDestCustom').value.trim();
+    return v || 'www.cloudflare.com:443';
+  }
+  return sel.value;
+}
+function collectNdServer() {
+  const host = $('ndHost').value.trim();
+  const pass = $('ndPass').value;
+  if (!host || !pass) { toast('请填写服务器 IP 和 SSH 密码'); return null; }
+  return { host, sshPort: Number($('ndPort').value) || 22, sshUser: $('ndUser').value.trim() || 'root', password: pass };
+}
+function nodeCreate() {
+  const server = collectNdServer();
+  if (!server) return;
+  const protocol = document.querySelector('input[name="proto"]:checked').value;
+  const port = Number($('ndNodePort').value) || (protocol === 'vless-reality' ? 443 : 8443);
+  const node = {
+    protocol,
+    port,
+    remark: $('ndRemark').value.trim(),
+    dest: ndCurrentDest(),
+    sni: $('ndSni').value.trim(),
+    wsPath: $('ndWsPath').value.trim(),
+  };
+  // 防误操作：创建会按端口清掉同端口旧入站（连带其客户端/订阅链接），先确认
+  if (!confirm('⚠️ 确定要创建新节点吗？\n\n创建时会自动删除端口 ' + port + ' 上已有的旧入站（含它的客户端和订阅链接）。\n\n若只是想给现有节点加客户端，请直接去面板操作，不需要点这里。')) return;
+  const btn = $('ndCreateBtn'); btn.disabled = true;
+  $('ndStatus').className = 'conn-status loading';
+  $('ndStatus').innerHTML = '<span class="spin-dot"></span><span>正在连接服务器创建节点，请稍候…</span>';
+  $('ndLogWrap').style.display = '';
+  $('ndLog').textContent = '';
+  $('ndResultBox').style.display = 'none';
+  $('ndLogHost').textContent = server.host;
+  socket.emit('node:create', { server, node });
+}
+function nodeList() {
+  const server = collectNdServer();
+  if (!server) return;
+  const btn = $('ndListBtn'); btn.disabled = true;
+  const box = $('ndListBox'); box.style.display = '';
+  const body = $('ndListBody'); body.innerHTML = '<div style="color:#6b7280">读取中…</div>';
+  socket.emit('node:list', { server });
+}
+function nodeDiag() {
+  const server = collectNdServer();
+  if (!server) return;
+  const btn = $('ndDiagBtn'); btn.disabled = true;
+  const box = $('ndDiagBox'); box.style.display = '';
+  const body = $('ndDiagBody'); body.textContent = '正在连接服务器收集诊断信息…';
+  socket.emit('node:diag', { server });
+}
+function nodeRestart() {
+  const server = collectNdServer();
+  if (!server) return;
+  const btn = $('ndRestartBtn'); btn.disabled = true;
+  const status = $('ndStatus');
+  status.className = 'conn-status loading';
+  status.innerHTML = '<span class="spin-dot"></span><span>正在重启面板与 xray…</span>';
+  socket.emit('node:restart', { server });
+}
+socket.on('node:restart:status', (d) => {
+  const status = $('ndStatus');
+  status.className = 'conn-status loading';
+  status.innerHTML = '<span class="spin-dot"></span><span>' + (d.text || '重启中…') + '</span>';
+});
+socket.on('node:restart:result', (d) => {
+  $('ndRestartBtn').disabled = false;
+  const status = $('ndStatus');
+  if (d.ok && /^active/i.test((d.output || '').trim())) {
+    status.className = 'conn-status ok';
+    status.innerHTML = '<span>✓</span><span>面板已重启，xray 已从数据库重新加载配置（含客户端）</span>';
+    toast('面板重启完成');
+  } else {
+    status.className = 'conn-status fail';
+    status.innerHTML = '<span>✕</span><span>重启异常：' + (d.output || '未知错误') + '</span>';
+  }
+});
+function nodeFixVer() {
+  const server = collectNdServer();
+  if (!server) return;
+  const btn = $('ndFixVerBtn'); btn.disabled = true;
+  const status = $('ndStatus');
+  status.className = 'conn-status loading';
+  status.innerHTML = '<span class="spin-dot"></span><span>正在把 minClientVer 设为 1.0.0 并重启…</span>';
+  socket.emit('node:fixver', { server });
+}
+socket.on('node:fixver:result', (d) => {
+  $('ndFixVerBtn').disabled = false;
+  const status = $('ndStatus');
+  if (d.ok && /FIX_DONE/.test(d.output || '')) {
+    const m = (d.output.match(/minClientVer[^,}]*/) || [])[0] || '';
+    status.className = 'conn-status ok';
+    status.innerHTML = '<span>✓</span><span>已设置 minClientVer=1.0.0 并重启完成（' + m + '）</span>';
+    toast('兼容性修复完成');
+  } else {
+    status.className = 'conn-status fail';
+    status.innerHTML = '<span>✕</span><span>修复失败：' + (d.output || '未知错误') + '</span>';
+  }
+});
+function nodeAccLog() {
+  const server = collectNdServer();
+  if (!server) return;
+  const btn = $('ndAccLogBtn'); btn.disabled = true;
+  const status = $('ndStatus');
+  status.className = 'conn-status loading';
+  status.innerHTML = '<span class="spin-dot"></span><span>正在开启 xray 访问日志并重启…</span>';
+  socket.emit('node:accesslog', { server });
+}
+socket.on('node:accesslog:result', (d) => {
+  $('ndAccLogBtn').disabled = false;
+  const status = $('ndStatus');
+  if (d.ok && /ACCLOG_DONE/.test(d.output || '')) {
+    const m = (d.output.match(/"access": "[^"]*"/) || [])[0] || '';
+    status.className = 'conn-status ok';
+    status.innerHTML = '<span>✓</span><span>访问日志已开启并重启（' + m + '）。请再触发一次连接后跑「🔌 诊断节点」看 [10] 段</span>';
+    toast('访问日志已开启');
+  } else {
+    status.className = 'conn-status fail';
+    status.innerHTML = '<span>✕</span><span>开启失败：' + (d.output || '未知错误') + '</span>';
+  }
+});
+socket.on('node:diag:status', (d) => { $('ndDiagBody').textContent = d.text || '诊断中…'; });
+socket.on('node:diag:result', (d) => {
+  $('ndDiagBtn').disabled = false;
+  const body = $('ndDiagBody');
+  if (!d.ok) { body.textContent = '诊断失败：' + (d.output || '未知错误'); return; }
+  body.textContent = d.output;
+});
+
+/* ---- 日志窗口一键复制 ---- */
+function copyLogEl(id) {
+  const el = $(id);
+  if (!el) return;
+  copyText((el.textContent || el.value || '').trim(), '日志');
+}
+function copyTerm() { copyXterm(term); }
+function copyRsTerm() { copyXterm(rsTerm); }
+function copyXterm(t) {
+  if (!t || !t.buffer || !t.buffer.active) { toast('终端尚未初始化'); return; }
+  const b = t.buffer.active, lines = [];
+  for (let y = 0; y < b.length; y++) {
+    const l = b.getLine(y);
+    if (l) lines.push(l.translateToString(true).replace(/\s+$/, ''));
+  }
+  copyText(lines.join('\n').trim(), '日志');
+}
+function copyText(txt, what) {
+  if (!txt) { toast((what || '内容') + '为空，暂无内容可复制'); return; }
+  const done = () => toast((what || '内容') + '已复制（' + txt.length + ' 字）');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done).catch(() => fbCopy(txt, done));
+  } else fbCopy(txt, done);
+}
+function fbCopy(txt, done) {
+  const ta = document.createElement('textarea');
+  ta.value = txt;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (_) { toast('复制失败，请手动选中复制'); }
+  document.body.removeChild(ta);
+}
+socket.on('node:list:status', (d) => { $('ndListBody').innerHTML = '<div style="color:#6b7280">' + (d.text || '读取中…') + '</div>'; });
+socket.on('node:list:result', (d) => {
+  $('ndListBtn').disabled = false;
+  const body = $('ndListBody');
+  if (!d.ok) { body.innerHTML = '<div style="color:#dc2626">读取失败：' + (d.output || '未知错误') + '</div>'; return; }
+  if (!d.rows || !d.rows.length) { body.innerHTML = '<div style="color:#6b7280">📭 面板上<b>还没有任何节点</b>（inbounds 表为空）。刚才创建若报过错，说明没写进去；若显示成功却这里为空，请检查面板是否指向同一台 VPS。</div>'; return; }
+  let h = '<table style="width:100%;border-collapse:collapse;margin-top:6px">'
+    + '<tr style="text-align:left;color:#6b7280;font-size:12px">'
+    + '<th style="padding:4px 6px">ID</th><th style="padding:4px 6px">名称</th><th style="padding:4px 6px">协议</th><th style="padding:4px 6px">端口</th><th style="padding:4px 6px">启用</th><th style="padding:4px 6px">客户端</th></tr>';
+  d.rows.forEach((r) => {
+    let clientCell;
+    const c = r.clients || {};
+    if (c.parseError) clientCell = '<span title="settings JSON 解析失败">⚠️ 解析失败</span>';
+    else if (c.count > 0) clientCell = '<span style="color:#059669;font-weight:600" title="邮箱：' + (c.emails.join('、') || '无') + '\nUUID：' + (c.ids.join('、') || '无') + '">' + c.count + ' 个 ✓</span>';
+    else clientCell = '<span style="color:#dc2626">0 个 ⚠️</span>';
+    h += '<tr style="border-top:1px solid #eee">'
+      + '<td style="padding:4px 6px">' + r.id + '</td>'
+      + '<td style="padding:4px 6px">' + (r.remark || '—') + '</td>'
+      + '<td style="padding:4px 6px">' + r.protocol + '</td>'
+      + '<td style="padding:4px 6px">' + r.port + '</td>'
+      + '<td style="padding:4px 6px">' + (r.enable == '1' ? '✅' : '⛔') + '</td>'
+      + '<td style="padding:4px 6px">' + clientCell + '</td>'
+      + '</tr>';
+  });
+  h += '</table>';
+  body.innerHTML = h;
+});
+</script>
+
+<!-- Reality 目标扫描器 Modal -->
+<div id="scanModal" style="display:none;position:fixed;inset:0;background:rgba(15,15,30,.55);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card,#fff);border-radius:16px;padding:20px;max-width:920px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h3 style="margin:0;font-size:16px;color:var(--text,#1f2937)">🔍 Reality 目标扫描器</h3>
+      <button onclick="closeRealityScan()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;line-height:1" aria-label="关闭">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-3,#6b7280);margin:0 0 12px">验证某个域名/IP 是否可作 Reality 伪装目标（需支持 TLS 1.3）。最多 60 个。</p>
+    <textarea id="scanInput" placeholder="每行一个，例如：&#10;www.cloudflare.com&#10;www.microsoft.com&#10;www.apple.com" style="width:100%;height:120px;padding:10px;border:1.5px solid var(--border-strong,#d1d5db);border-radius:10px;font-family:ui-monospace,Consolas,monospace;font-size:13px;box-sizing:border-box;background:var(--bg,#fff);color:var(--text,#1f2937);resize:vertical"></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <button onclick="runRealityScan()" class="btn btn-primary btn-sm">扫描</button>
+      <button onclick="loadScanPreset()" class="btn btn-secondary btn-sm">填入预置清单</button>
+      <button onclick="$('scanInput').value='';$('scanResults').innerHTML='';$('scanStatus').textContent=''" class="btn btn-ghost btn-sm">清空</button>
+    </div>
+    <div id="scanStatus" style="margin-top:12px;font-size:13px;color:var(--text-3,#6b7280)"></div>
+    <div id="scanResults" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<script>
+/* ===== Reality 目标扫描器 ===== */
+function openRealityScan() { $('scanModal').style.display = 'flex'; }
+function closeRealityScan() { $('scanModal').style.display = 'none'; }
+function loadScanPreset() {
+  $('scanInput').value = ['www.cloudflare.com','www.microsoft.com','www.intel.com','www.apple.com','www.google.com','www.nvidia.com','www.samsung.com','www.amazon.com','www.amd.com','www.sony.com','dl.google.com','www.mozilla.org'].join('\n');
+}
+function runRealityScan() {
+  const targets = $('scanInput').value;
+  if (!targets.trim()) { toast('请输入至少一个目标'); return; }
+  $('scanStatus').textContent = '扫描中…';
+  $('scanResults').innerHTML = '';
+  socket.emit('reality:scan', { targets });
+}
+function useScanResult(target) {
+  // 切到「自定义」并填入扫描到的目标
+  $('ndDest').value = '__custom__';
+  $('ndDestCustom').style.display = '';
+  $('ndDestCustom').value = target + ':443';
+  $('ndSni').value = target;
+  closeRealityScan();
+  toast('已应用：' + target);
+}
+function escHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+socket.on('reality:scan:status', (d) => { $('scanStatus').textContent = d.text || ''; });
+socket.on('reality:scan:result', (d) => {
+  if (!d.ok) { $('scanStatus').innerHTML = '<span style="color:#dc2626">' + escHtml(d.output) + '</span>'; return; }
+  const rs = d.results;
+  const okCount = rs.filter(r => r.ok).length;
+  $('scanStatus').innerHTML = `扫描完成：共 <b>${rs.length}</b> 个目标，<b style="color:#065f46">${okCount} 个可用</b>，按可用性+延迟排序`;
+  let h = '<div style="overflow:auto;max-height:50vh;border:1px solid var(--border,#e5e7eb);border-radius:10px"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:640px">';
+  h += '<thead style="position:sticky;top:0;background:var(--card,#fff)"><tr style="text-align:left;color:#6b7280;border-bottom:1px solid var(--border,#e5e7eb)">';
+  h += '<th style="padding:8px 10px">目标</th><th style="padding:8px 10px">状态</th><th style="padding:8px 10px">TLS</th><th style="padding:8px 10px">ALPN</th><th style="padding:8px 10px">证书</th><th style="padding:8px 10px">延迟</th><th style="padding:8px 10px"></th></tr></thead><tbody>';
+  rs.forEach((r) => {
+    const st = r.ok
+      ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:6px;font-size:12px">可用</span>'
+      : '<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:6px;font-size:12px">不可用</span>' + (r.error ? ' <span style="font-size:11px;color:#9ca3af">' + escHtml(r.error) + '</span>' : '');
+    h += '<tr style="border-top:1px solid var(--border-soft,#f3f4f6)">';
+    h += '<td style="padding:8px 10px;font-family:ui-monospace,Consolas,monospace;font-size:12px">' + escHtml(r.target) + '</td>';
+    h += '<td style="padding:8px 10px">' + st + '</td>';
+    h += '<td style="padding:8px 10px">' + escHtml(r.tls || '-') + '</td>';
+    h += '<td style="padding:8px 10px">' + escHtml(r.alpn || '-') + '</td>';
+    h += '<td style="padding:8px 10px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escHtml(r.subject || r.issuer || '') + '">' + escHtml(r.subject || r.issuer || '-') + '</td>';
+    h += '<td style="padding:8px 10px">' + r.latency + ' ms</td>';
+    h += '<td style="padding:8px 10px">' + (r.ok ? `<button onclick="useScanResult('${escHtml(r.target)}')" style="padding:3px 12px;background:#6d4aff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px">使用</button>` : '') + '</td>';
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  $('scanResults').innerHTML = h;
+});
+// 点击遮罩关闭（modal 已在 DOM，直接绑定即可，不依赖 DOMContentLoaded 时机）
+(function() {
+  var sm = document.getElementById('scanModal');
+  if (sm) sm.addEventListener('click', function(e) { if (e.target.id === 'scanModal') closeRealityScan(); });
+})();
+</script>
+</body>
+</html>
