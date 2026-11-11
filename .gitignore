@@ -32,6 +32,7 @@ build/
 *.nupkg
 *.zip
 
-# 工具缓存
+# 工具缓存与临时解包产物
 .ruff_cache/
 .dumate/
+.tmp/
